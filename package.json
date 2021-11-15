@@ -2,10 +2,12 @@
   "name": "transparent-proxy",
   "version": "1.8.7",
   "description": "Real transparent HTTP-Proxy-Server. Upstream your requests whatever you want!",
-  "main": "ProxyServer.js",
+  "main": "dist/ProxyServer.js",
+  "types": "dist/ProxyServer.d.ts",
   "scripts": {
     "test": "node test.js exit 0",
-    "prepublish": "npm test"
+    "build": "tsc --build .",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "proxy",
@@ -21,5 +23,11 @@
   ],
   "author": "gr3p",
   "license": "ISC",
-  "homepage": "https://github.com/gr3p1p3/transparent-proxy"
+  "homepage": "https://github.com/gr3p1p3/transparent-proxy",
+  "dependencies": {
+    "typescript": "^4.4.4"
+  },
+  "devDependencies": {
+    "@types/node": "^16.11.7"
+  }
 }
