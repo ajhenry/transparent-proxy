@@ -4,10 +4,34 @@ import Session from "./core/Session";
 import { DEFAULT_OPTIONS } from "./lib/constants";
 import Logger from "./lib/Logger";
 
+interface ProxyServerOptions {
+  upstream?: any;
+  tcpOutgoingAddress?: any;
+  verbose?: any;
+  injectData?: any;
+  injectResponse?: any;
+  auth?: any;
+  intercept?: any;
+  keys?: any;
+  filter?: (options: {
+    req: {
+      method: string;
+      url: string;
+      path: string;
+      httpType: string;
+      body: Buffer;
+      headers: Record<string, string>;
+    };
+    close: (message: string) => void;
+    data: Buffer;
+    tunnel: Session;
+  }) => void;
+}
+
 export default class ProxyServer extends (Server.createServer as any) {
   private bridgedConnections: Record<string, Session>;
 
-  constructor(options: any) {
+  constructor(options: ProxyServerOptions) {
     const {
       upstream,
       tcpOutgoingAddress,

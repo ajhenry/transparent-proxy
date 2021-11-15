@@ -222,24 +222,6 @@ export async function onConnectedClientHandling(
     return connectionOpt;
   }
 
-  function handleProxyTunnel(split: any, data: any) {
-    const firstHeaderRow = split[0];
-    const thisTunnel = bridgedConnections[remoteID];
-
-    if (~firstHeaderRow.indexOf(CONNECT)) {
-      //managing HTTP-Tunnel(upstream) & HTTPs
-      prepareTunnel(data, firstHeaderRow, true);
-    } else if (firstHeaderRow.indexOf(CONNECT) === -1 && !thisTunnel._dst) {
-      // managing http
-      prepareTunnel(data, firstHeaderRow);
-    } else if (thisTunnel && thisTunnel._dst) {
-      filter?.(data, thisTunnel, (message: string) =>
-        closeGitConnection(message)
-      );
-      return onDirectConnectionOpen(data);
-    }
-  }
-
   function closeGitConnection(errorMessage: string) {
     const thisTunnel = bridgedConnections[remoteID];
 
@@ -250,6 +232,52 @@ export async function onConnectedClientHandling(
     const packetMessage = `00${prefix}\x02${errorMessage}\n0000`;
     thisTunnel.clientResponseWrite("HTTP/1.0 200 OK\r\n\r\n" + packetMessage);
     thisTunnel.destroy();
+  }
+
+  async function handleProxyTunnel(split: any, data: any) {
+    const firstHeaderRow = split[0];
+    const thisTunnel = bridgedConnections[remoteID];
+
+    if (~firstHeaderRow.indexOf(CONNECT)) {
+      //managing HTTP-Tunnel(upstream) & HTTPs
+      prepareTunnel(data, firstHeaderRow, true);
+    } else if (firstHeaderRow.indexOf(CONNECT) === -1 && !thisTunnel._dst) {
+      // managing http
+      prepareTunnel(data, firstHeaderRow);
+    } else if (thisTunnel && thisTunnel._dst) {
+      await filter?.({
+        req: convertDataToReq(data, thisTunnel),
+        data,
+        tunnel: thisTunnel,
+        close: (message: string) => closeGitConnection(message),
+      });
+      return onDirectConnectionOpen(data);
+    }
+  }
+
+  function convertDataToReq(data: Buffer, tunnel: Session) {
+    const headerEnd = data.indexOf("\r\n\r\n");
+    const body = data.slice(headerEnd + 4);
+    const [headers] = data.toString().split("\r\n\r\n");
+    let method, path, type;
+    const headerMap: Record<string, string> = {};
+    headers.split("\r\n").forEach((header, index) => {
+      if (index === 0) {
+        [method, path, type] = header.split(" ");
+        return;
+      }
+      const parts = header.split(": ");
+      headerMap[parts[0].toLowerCase()] = parts[1];
+    });
+    const req = {
+      method,
+      url: `http${tunnel.isHttps ? "s" : ""}://${headerMap.host}${path}`,
+      path,
+      httpType: type,
+      body,
+      headers: headerMap,
+    };
+    return req;
   }
 
   async function onDataFromClient(data: Buffer) {
