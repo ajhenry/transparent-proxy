@@ -7,6 +7,7 @@ import {
   SLASH_REGEXP,
   STRINGS
 } from "../lib/constants";
+import { isValid } from "../lib/isValidASCII";
 
 /**
  *
@@ -75,7 +76,6 @@ export function getConnectionOptions(
       localAddress: string;
     }
   | undefined {
-  const isValid = require("../lib/isValidASCII");
   if (isValid(upstreamHost)) {
     const upstreamed = !!proxyToUse;
     const upstreamToUse = upstreamed ? proxyToUse : upstreamHost;

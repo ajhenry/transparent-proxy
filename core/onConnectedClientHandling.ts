@@ -1,18 +1,18 @@
 import Logger from "lib/Logger";
 import net, { Socket } from "net";
 import {
-    ERROR_CODES,
-    EVENTS,
-    HTTPS,
-    HTTP_BODIES,
-    HTTP_METHODS,
-    HTTP_RESPONSES,
-    STRINGS
+  ERROR_CODES,
+  EVENTS,
+  HTTPS,
+  HTTP_BODIES,
+  HTTP_METHODS,
+  HTTP_RESPONSES,
+  STRINGS
 } from "../lib/constants";
-import isFunction from "../lib/isFunction";
+import { isFunction } from "../lib/isFunction";
 import { parseHeaders } from "../lib/parseHeaders";
-import rebuildHeaders from "../lib/rebuildHeaders";
-import usingUpstreamToProxy from "../lib/usingUpstreamToProxy";
+import { rebuildHeaders } from "../lib/rebuildHeaders";
+import { usingUpstreamToProxy } from "../lib/usingUpstreamToProxy";
 import { getConnectionOptions } from "./getConnectionOptions";
 import Session from "./Session";
 
